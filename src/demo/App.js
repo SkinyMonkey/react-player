@@ -17,9 +17,18 @@ const MULTIPLE_SOURCES = [
   { src: 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.webm', type: 'video/webm' }
 ]
 
+const LINKS = [
+  'https://www.youtube.com/watch?v=oUFJJNQGwhk'
+ ,'https://www.youtube.com/watch?v=jNgP6d9HraI'
+ ,'https://soundcloud.com/miami-nights-1984/accelerated'
+ ,'https://soundcloud.com/tycho/tycho-awake'
+ ,'https://vimeo.com/90509568'
+ ,'https://vimeo.com/169599296'
+]
+
 export default class App extends Component {
   state = {
-    url: null,
+    url: LINKS[0], // FIXME : null WORKS .. but why
     playing: true,
     volume: 0.8,
     muted: false,
@@ -27,8 +36,30 @@ export default class App extends Component {
     loaded: 0,
     duration: 0,
     playbackRate: 1.0,
-    loop: false
+    loop: false,
+    index: 0,
   }
+
+  next = () => {
+    if (this.state.index < LINKS.length) {
+      this.setState({
+        index: this.state.index + 1,
+        url: LINKS[this.state.index + 1],
+        playing: true
+      });
+    }
+  }
+ 
+  previous = () => {  
+    if (this.state.index > 0){
+      this.setState({
+        index: this.state.index - 1,
+        url: LINKS[this.state.index - 1],
+        playing: true
+      });
+    }
+  }
+
   load = url => {
     this.setState({
       url,
@@ -127,17 +158,22 @@ export default class App extends Component {
               playbackRate={playbackRate}
               volume={volume}
               muted={muted}
-              soundcloudConfig={soundcloudConfig}
-              vimeoConfig={vimeoConfig}
-              youtubeConfig={youtubeConfig}
-              fileConfig={fileConfig}
+              config={{
+                youtube: {preload: true},
+                soundcloud: {preload: true, clientId: 'eb257e698774349c22b0b727df0238ad'},
+                dailymotion: {preload: true}
+              }}
               onReady={() => console.log('onReady')}
               onStart={() => console.log('onStart')}
               onPlay={this.onPlay}
-              onPause={this.onPause}
+              onPause={() => console.log('onPause')}
               onBuffer={() => console.log('onBuffer')}
               onSeek={e => console.log('onSeek', e)}
-              onEnded={() => this.setState({ playing: loop })}
+              onEnded={() => {
+                if (!loop) {
+                  this.next()
+                }
+              }}
               onError={e => console.log('onError', e)}
               onProgress={this.onProgress}
               onDuration={duration => this.setState({ duration })}
@@ -149,6 +185,8 @@ export default class App extends Component {
               <th>Controls</th>
               <td>
                 <button onClick={this.stop}>Stop</button>
+                <button onClick={this.next}>Next</button>
+                <button onClick={this.previous}>Previous</button>
                 <button onClick={this.playPause}>{playing ? 'Pause' : 'Play'}</button>
                 <button onClick={this.onClickFullscreen}>Fullscreen</button>
                 <button onClick={this.setPlaybackRate} value={1}>1</button>
